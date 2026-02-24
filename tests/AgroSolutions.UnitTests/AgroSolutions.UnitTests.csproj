@@ -14,6 +14,15 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+    <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="FluentValidation" Version="11.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Services\Identity\AgroSolutions.Identity.Domain\AgroSolutions.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Services\Identity\AgroSolutions.Identity.Infrastructure\AgroSolutions.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Services\Identity\AgroSolutions.Identity.API\AgroSolutions.Identity.API.csproj" />
   </ItemGroup>
 
   <ItemGroup>
