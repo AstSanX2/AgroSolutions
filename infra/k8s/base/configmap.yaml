@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agrosolutions-config
+  namespace: agrosolutions
+data:
+  ASPNETCORE_ENVIRONMENT: "Development"
+  MongoDB__Database: "agrosolutions"
+  JwtSettings__Issuer: "AgroSolutions"
+  JwtSettings__Audience: "AgroSolutions"
+  JwtSettings__ExpirationInHours: "24"

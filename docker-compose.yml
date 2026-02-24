@@ -1,0 +1,186 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  mongodb:
+    image: mongo:7.0
+    container_name: agrosolutions-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: agrosolutions
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - agrosolutions-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/agrosolutions --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: agrosolutions-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - agrosolutions-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Observability Services
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    container_name: agrosolutions-otel
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./infra/otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8889:8889"   # Prometheus exporter
+    networks:
+      - agrosolutions-network
+    depends_on:
+      - grafana
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: agrosolutions-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - agrosolutions-network
+
+  # Application Services
+  identity-api:
+    build:
+      context: .
+      dockerfile: src/Services/Identity/AgroSolutions.Identity.API/Dockerfile
+    container_name: agrosolutions-identity-api
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__MongoDB=mongodb://mongodb:27017/agrosolutions
+      - JwtSettings__Secret=AgroSolutionsSecretKey2024SuperSecure!
+      - JwtSettings__Issuer=AgroSolutions
+      - JwtSettings__Audience=AgroSolutions
+      - JwtSettings__ExpirationInHours=24
+      - Otel__Endpoint=http://otel-collector:4317
+    networks:
+      - agrosolutions-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  property-api:
+    build:
+      context: .
+      dockerfile: src/Services/Property/AgroSolutions.Property.API/Dockerfile
+    container_name: agrosolutions-property-api
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__MongoDB=mongodb://mongodb:27017/agrosolutions
+      - ConnectionStrings__RabbitMQ=amqp://guest:guest@rabbitmq:5672
+      - JwtSettings__Secret=AgroSolutionsSecretKey2024SuperSecure!
+      - JwtSettings__Issuer=AgroSolutions
+      - JwtSettings__Audience=AgroSolutions
+      - Otel__Endpoint=http://otel-collector:4317
+    networks:
+      - agrosolutions-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  dataingestion-api:
+    build:
+      context: .
+      dockerfile: src/Services/DataIngestion/AgroSolutions.DataIngestion.API/Dockerfile
+    container_name: agrosolutions-dataingestion-api
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__MongoDB=mongodb://mongodb:27017/agrosolutions
+      - ConnectionStrings__RabbitMQ=amqp://guest:guest@rabbitmq:5672
+      - JwtSettings__Secret=AgroSolutionsSecretKey2024SuperSecure!
+      - JwtSettings__Issuer=AgroSolutions
+      - JwtSettings__Audience=AgroSolutions
+      - Otel__Endpoint=http://otel-collector:4317
+    networks:
+      - agrosolutions-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  alert-worker:
+    build:
+      context: .
+      dockerfile: src/Services/Alert/AgroSolutions.Alert.Worker/Dockerfile
+    container_name: agrosolutions-alert-worker
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - ConnectionStrings__MongoDB=mongodb://mongodb:27017/agrosolutions
+      - ConnectionStrings__RabbitMQ=amqp://guest:guest@rabbitmq:5672
+      - Otel__Endpoint=http://otel-collector:4317
+    networks:
+      - agrosolutions-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: .
+      dockerfile: src/ApiGateway/AgroSolutions.Gateway/Dockerfile
+    container_name: agrosolutions-gateway
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ReverseProxy__Clusters__identity__Destinations__default__Address=http://identity-api:8080
+      - ReverseProxy__Clusters__property__Destinations__default__Address=http://property-api:8080
+      - ReverseProxy__Clusters__dataingestion__Destinations__default__Address=http://dataingestion-api:8080
+      - Otel__Endpoint=http://otel-collector:4317
+    networks:
+      - agrosolutions-network
+    depends_on:
+      - identity-api
+      - property-api
+      - dataingestion-api
+
+networks:
+  agrosolutions-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  rabbitmq_data:
+  grafana_data:

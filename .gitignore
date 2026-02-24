@@ -1,0 +1,65 @@
+# .NET
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.cache
+*.dll
+*.pdb
+*.exe
+
+# IDE
+.vs/
+.vscode/
+*.swp
+*~
+.idea/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+# Test results
+TestResults/
+*.trx
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# User-specific files
+*.rsuser
+*.sln.docstates
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+*.env
+
+# Docker
+docker-compose.override.yml
+
+# Kubernetes secrets (local)
+*-secret.yaml
+!*-secret.yaml.example
+
+# Temp files
+*.tmp
+*.temp
+
+# Prompts (internal documentation)
+docs/prompts/

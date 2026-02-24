@@ -1,0 +1,6 @@
+@AgroSolutions.Property.API_HostAddress = http://localhost:5045
+
+GET {{AgroSolutions.Property.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
