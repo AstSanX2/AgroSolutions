@@ -1,5 +1,7 @@
 using System.Text;
 using AgroSolutions.Common.Extensions;
+using AgroSolutions.EventBus.RabbitMQ.Extensions;
+using AgroSolutions.Property.API.Consumers;
 using AgroSolutions.Property.Domain.Interfaces;
 using AgroSolutions.Property.Infrastructure.Data;
 using AgroSolutions.Property.Infrastructure.Repositories;
@@ -76,6 +78,10 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+// RabbitMQ EventBus
+builder.Services.AddRabbitMqEventBus(builder.Configuration);
+builder.Services.AddHostedService<SensorUpdateConsumer>();
 
 // Health checks
 builder.Services.AddHealthChecks();

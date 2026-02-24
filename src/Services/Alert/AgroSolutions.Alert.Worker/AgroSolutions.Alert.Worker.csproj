@@ -10,4 +10,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AgroSolutions.Alert.Domain\AgroSolutions.Alert.Domain.csproj" />
+    <ProjectReference Include="..\AgroSolutions.Alert.Infrastructure\AgroSolutions.Alert.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\AgroSolutions.EventBus.RabbitMQ\AgroSolutions.EventBus.RabbitMQ.csproj" />
+  </ItemGroup>
+
 </Project>
