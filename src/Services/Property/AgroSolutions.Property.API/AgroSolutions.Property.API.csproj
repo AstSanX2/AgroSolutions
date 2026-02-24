@@ -7,7 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\AgroSolutions.Common\AgroSolutions.Common.csproj" />
+    <ProjectReference Include="..\AgroSolutions.Property.Domain\AgroSolutions.Property.Domain.csproj" />
+    <ProjectReference Include="..\AgroSolutions.Property.Infrastructure\AgroSolutions.Property.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

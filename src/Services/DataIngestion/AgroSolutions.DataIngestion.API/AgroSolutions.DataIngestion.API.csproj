@@ -7,7 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\AgroSolutions.Common\AgroSolutions.Common.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\AgroSolutions.EventBus.RabbitMQ\AgroSolutions.EventBus.RabbitMQ.csproj" />
+    <ProjectReference Include="..\AgroSolutions.DataIngestion.Domain\AgroSolutions.DataIngestion.Domain.csproj" />
+    <ProjectReference Include="..\AgroSolutions.DataIngestion.Infrastructure\AgroSolutions.DataIngestion.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

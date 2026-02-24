@@ -23,6 +23,13 @@
     <ProjectReference Include="..\..\src\Services\Identity\AgroSolutions.Identity.Domain\AgroSolutions.Identity.Domain.csproj" />
     <ProjectReference Include="..\..\src\Services\Identity\AgroSolutions.Identity.Infrastructure\AgroSolutions.Identity.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Services\Identity\AgroSolutions.Identity.API\AgroSolutions.Identity.API.csproj" />
+    <ProjectReference Include="..\..\src\Services\Property\AgroSolutions.Property.Domain\AgroSolutions.Property.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Services\Property\AgroSolutions.Property.Infrastructure\AgroSolutions.Property.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Services\Property\AgroSolutions.Property.API\AgroSolutions.Property.API.csproj" />
+    <ProjectReference Include="..\..\src\Services\DataIngestion\AgroSolutions.DataIngestion.Domain\AgroSolutions.DataIngestion.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Services\DataIngestion\AgroSolutions.DataIngestion.Infrastructure\AgroSolutions.DataIngestion.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Services\DataIngestion\AgroSolutions.DataIngestion.API\AgroSolutions.DataIngestion.API.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\AgroSolutions.EventBus.RabbitMQ\AgroSolutions.EventBus.RabbitMQ.csproj" />
   </ItemGroup>
 
   <ItemGroup>
