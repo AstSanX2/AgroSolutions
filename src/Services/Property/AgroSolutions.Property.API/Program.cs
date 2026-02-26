@@ -79,12 +79,23 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// OpenTelemetry
+builder.Services.AddAgroTelemetry("PropertyAPI", builder.Configuration);
+
 // RabbitMQ EventBus
 builder.Services.AddRabbitMqEventBus(builder.Configuration);
 builder.Services.AddHostedService<SensorUpdateConsumer>();
 
 // Health checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddMongoDb(
+        builder.Configuration["MongoDB:ConnectionString"] ?? "mongodb://localhost:27017/agrosolutions",
+        name: "mongodb",
+        tags: new[] { "ready" })
+    .AddRabbitMQ(
+        new Uri(builder.Configuration["RabbitMQ:ConnectionString"] ?? "amqp://guest:guest@localhost:5672"),
+        name: "rabbitmq",
+        tags: new[] { "ready" });
 
 var app = builder.Build();
 
@@ -102,6 +113,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
 app.MapGet("/", () => Results.Ok(new { service = "Property API", status = "running" }));
 app.MapControllers();
 

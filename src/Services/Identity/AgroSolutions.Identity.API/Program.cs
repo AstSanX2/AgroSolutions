@@ -80,8 +80,15 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// OpenTelemetry
+builder.Services.AddAgroTelemetry("IdentityAPI", builder.Configuration, "AgroSolutions.Identity");
+
 // Health checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddMongoDb(
+        builder.Configuration["MongoDB:ConnectionString"] ?? "mongodb://localhost:27017/agrosolutions",
+        name: "mongodb",
+        tags: new[] { "ready" });
 
 var app = builder.Build();
 
@@ -99,6 +106,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
 app.MapGet("/", () => Results.Ok(new { service = "Identity API", status = "running" }));
 app.MapControllers();
 

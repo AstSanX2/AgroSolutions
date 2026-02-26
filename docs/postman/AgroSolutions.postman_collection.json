@@ -1,0 +1,455 @@
+{
+  "info": {
+    "name": "AgroSolutions",
+    "description": "Colecao completa de endpoints da plataforma AgroSolutions",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "propertyId",
+      "value": ""
+    },
+    {
+      "key": "plotId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Daniel Silva\",\n  \"email\": \"daniel@agrosolutions.com\",\n  \"senha\": \"Senha@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/identity/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "identity", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"daniel@agrosolutions.com\",\n  \"senha\": \"Senha@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/identity/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "identity", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Me (Get Profile)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/identity/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "identity", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Properties",
+      "item": [
+        {
+          "name": "Create Property",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('propertyId', json.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Fazenda Santa Maria\",\n  \"endereco\": \"Rodovia SP-310, km 120 - Sao Carlos, SP\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/property",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property"]
+            }
+          }
+        },
+        {
+          "name": "List Properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/property?page=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Property by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/property/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "{{propertyId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Property",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Fazenda Santa Maria Atualizada\",\n  \"endereco\": \"Rodovia SP-310, km 125 - Sao Carlos, SP\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/property/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "{{propertyId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Property",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/property/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "{{propertyId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Plots",
+      "item": [
+        {
+          "name": "Create Plot",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('plotId', json.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Talhao Norte\",\n  \"area\": 150.5,\n  \"latitude\": -22.0087,\n  \"longitude\": -47.8909,\n  \"culturaNome\": \"Soja\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/property/{{propertyId}}/plots",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "{{propertyId}}", "plots"]
+            }
+          }
+        },
+        {
+          "name": "List Plots",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/property/{{propertyId}}/plots",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "{{propertyId}}", "plots"]
+            }
+          }
+        },
+        {
+          "name": "Get Plot by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/property/{{propertyId}}/plots/{{plotId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "{{propertyId}}", "plots", "{{plotId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Plot",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Talhao Norte Atualizado\",\n  \"area\": 200.0,\n  \"latitude\": -22.0087,\n  \"longitude\": -47.8909,\n  \"culturaNome\": \"Milho\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/property/{{propertyId}}/plots/{{plotId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "{{propertyId}}", "plots", "{{plotId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Plot",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/property/{{propertyId}}/plots/{{plotId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "property", "{{propertyId}}", "plots", "{{plotId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Sensors",
+      "item": [
+        {
+          "name": "Post Humidity Reading",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 45.5,\n  \"timestamp\": \"2025-01-15T10:30:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/humidity",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "humidity"]
+            }
+          }
+        },
+        {
+          "name": "Post Temperature Reading",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 32.0,\n  \"timestamp\": \"2025-01-15T10:30:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/temperature",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "temperature"]
+            }
+          }
+        },
+        {
+          "name": "Post Rainfall Reading",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 12.3,\n  \"timestamp\": \"2025-01-15T10:30:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/rainfall",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "rainfall"]
+            }
+          }
+        },
+        {
+          "name": "Post Low Humidity (triggers alert)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 15.0,\n  \"timestamp\": \"2025-01-15T11:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/humidity",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "humidity"]
+            }
+          }
+        },
+        {
+          "name": "Get Sensor History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/{{propertyId}}/{{plotId}}?page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "{{propertyId}}", "{{plotId}}"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Latest Readings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/{{propertyId}}/{{plotId}}/latest",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "{{propertyId}}", "{{plotId}}", "latest"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Health Checks",
+      "item": [
+        {
+          "name": "Gateway Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Identity Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5001/health",
+              "host": ["http://localhost:5001"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Identity Readiness",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5001/health/ready",
+              "host": ["http://localhost:5001"],
+              "path": ["health", "ready"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

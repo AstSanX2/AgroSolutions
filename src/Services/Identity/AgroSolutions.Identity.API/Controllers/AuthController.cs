@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using System.Security.Claims;
 using AgroSolutions.Identity.API.DTOs;
 using AgroSolutions.Identity.Domain.Entities;
@@ -14,6 +15,10 @@ namespace AgroSolutions.Identity.API.Controllers;
 [Route("auth")]
 public class AuthController : ControllerBase
 {
+    private static readonly Meter Meter = new("AgroSolutions.Identity", "1.0.0");
+    private static readonly Counter<long> LoginCounter = Meter.CreateCounter<long>("auth_login_total", description: "Total de logins realizados");
+    private static readonly Counter<long> RegisterCounter = Meter.CreateCounter<long>("auth_register_total", description: "Total de registros realizados");
+
     private readonly IUserRepository _userRepository;
     private readonly ITokenService _tokenService;
     private readonly JwtSettings _jwtSettings;
@@ -54,6 +59,7 @@ public class AuthController : ControllerBase
         };
 
         await _userRepository.CreateAsync(user);
+        RegisterCounter.Add(1);
 
         var token = _tokenService.GenerateToken(user);
         var response = BuildAuthResponse(user, token);
@@ -82,6 +88,8 @@ public class AuthController : ControllerBase
 
         if (!user.Ativo)
             return Unauthorized(new { message = "Usuario inativo." });
+
+        LoginCounter.Add(1);
 
         var token = _tokenService.GenerateToken(user);
         var response = BuildAuthResponse(user, token);

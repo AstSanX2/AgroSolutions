@@ -15,6 +15,9 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("Mo
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<ISensorReadingRepository, SensorReadingRepository>();
 
+// OpenTelemetry
+builder.Services.AddAgroTelemetry("DataIngestionAPI", builder.Configuration, "AgroSolutions.DataIngestion");
+
 // RabbitMQ EventBus
 builder.Services.AddRabbitMqEventBus(builder.Configuration);
 
@@ -34,7 +37,15 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Health checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddMongoDb(
+        builder.Configuration["MongoDB:ConnectionString"] ?? "mongodb://localhost:27017/agrosolutions",
+        name: "mongodb",
+        tags: new[] { "ready" })
+    .AddRabbitMQ(
+        new Uri(builder.Configuration["RabbitMQ:ConnectionString"] ?? "amqp://guest:guest@localhost:5672"),
+        name: "rabbitmq",
+        tags: new[] { "ready" });
 
 var app = builder.Build();
 
@@ -49,6 +60,10 @@ app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.json", "DataIngestion API v1"));
 
 app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
 app.MapGet("/", () => Results.Ok(new { service = "DataIngestion API", status = "running" }));
 app.MapControllers();
 

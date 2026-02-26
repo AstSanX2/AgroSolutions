@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using AgroSolutions.DataIngestion.API.DTOs;
 using AgroSolutions.DataIngestion.API.Validators;
 using AgroSolutions.DataIngestion.Domain.Entities;
@@ -12,6 +13,9 @@ namespace AgroSolutions.DataIngestion.API.Controllers;
 [Route("")]
 public class SensorsController : ControllerBase
 {
+    private static readonly Meter Meter = new("AgroSolutions.DataIngestion", "1.0.0");
+    private static readonly Counter<long> ReadingsCounter = Meter.CreateCounter<long>("sensor_readings_total", description: "Total de leituras de sensores recebidas");
+
     private readonly ISensorReadingRepository _repository;
     private readonly IEventBus _eventBus;
     private readonly ILogger<SensorsController> _logger;
@@ -128,6 +132,7 @@ public class SensorsController : ControllerBase
 
         // 1. Persist to MongoDB
         await _repository.CreateAsync(reading);
+        ReadingsCounter.Add(1, new KeyValuePair<string, object?>("sensor_type", type.ToString()));
 
         // 2. Publish to alert queue
         try

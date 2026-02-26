@@ -4,9 +4,13 @@ using AgroSolutions.Alert.Infrastructure.Data;
 using AgroSolutions.Alert.Infrastructure.Repositories;
 using AgroSolutions.Alert.Infrastructure.Settings;
 using AgroSolutions.Alert.Worker.Consumers;
+using AgroSolutions.Common.Extensions;
 using AgroSolutions.EventBus.RabbitMQ.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+// OpenTelemetry
+builder.Services.AddAgroTelemetry("AlertWorker", builder.Configuration, "AgroSolutions.Alert");
 
 // MongoDB
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDB"));

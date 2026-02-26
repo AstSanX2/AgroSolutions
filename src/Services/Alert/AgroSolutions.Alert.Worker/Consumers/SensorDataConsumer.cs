@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using AgroSolutions.Alert.Domain.Enums;
 using AgroSolutions.Alert.Domain.Interfaces;
 using AgroSolutions.Alert.Domain.Rules;
@@ -8,6 +9,10 @@ namespace AgroSolutions.Alert.Worker.Consumers;
 
 public class SensorDataConsumer : BackgroundService
 {
+    private static readonly Meter Meter = new("AgroSolutions.Alert", "1.0.0");
+    private static readonly Counter<long> AlertsTriggeredCounter = Meter.CreateCounter<long>("alerts_triggered_total", description: "Total de alertas disparados");
+    private static readonly Counter<long> AlertsNormalizedCounter = Meter.CreateCounter<long>("alerts_normalized_total", description: "Total de alertas normalizados");
+
     private readonly IEventBus _eventBus;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IEnumerable<IAlertRule> _alertRules;
@@ -73,6 +78,7 @@ public class SensorDataConsumer : BackgroundService
                 {
                     var alert = triggeredRule.CreateAlert(message.PropertyId, message.PlotId, message.Value);
                     await alertRepository.CreateAsync(alert);
+                    AlertsTriggeredCounter.Add(1, new KeyValuePair<string, object?>("alert_type", alert.AlertType.ToString()));
 
                     _logger.LogWarning(
                         "ALERTA CRIADO: {Message} - PropertyId={PropertyId}, PlotId={PlotId}, Valor={Value}",
@@ -90,6 +96,7 @@ public class SensorDataConsumer : BackgroundService
             else if (activeAlert != null)
             {
                 await alertRepository.DeactivateAsync(activeAlert.Id);
+                AlertsNormalizedCounter.Add(1, new KeyValuePair<string, object?>("alert_type", activeAlert.AlertType.ToString()));
 
                 _logger.LogInformation(
                     "ALERTA DESATIVADO: PropertyId={PropertyId}, PlotId={PlotId}, SensorType={SensorType} - Valor normalizado: {Value}",

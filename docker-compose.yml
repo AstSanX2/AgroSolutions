@@ -80,7 +80,9 @@ services:
       - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__MongoDB=mongodb://mongodb:27017/agrosolutions
+      - PathBase=/api/identity
+      - MongoDB__ConnectionString=mongodb://mongodb:27017/agrosolutions
+      - MongoDB__Database=agrosolutions
       - JwtSettings__Secret=AgroSolutionsSecretKey2024SuperSecure!
       - JwtSettings__Issuer=AgroSolutions
       - JwtSettings__Audience=AgroSolutions
@@ -101,8 +103,10 @@ services:
       - "5002:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__MongoDB=mongodb://mongodb:27017/agrosolutions
-      - ConnectionStrings__RabbitMQ=amqp://guest:guest@rabbitmq:5672
+      - PathBase=/api/property
+      - MongoDB__ConnectionString=mongodb://mongodb:27017/agrosolutions
+      - MongoDB__Database=agrosolutions
+      - RabbitMQ__ConnectionString=amqp://guest:guest@rabbitmq:5672
       - JwtSettings__Secret=AgroSolutionsSecretKey2024SuperSecure!
       - JwtSettings__Issuer=AgroSolutions
       - JwtSettings__Audience=AgroSolutions
@@ -124,11 +128,10 @@ services:
       - "5003:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__MongoDB=mongodb://mongodb:27017/agrosolutions
-      - ConnectionStrings__RabbitMQ=amqp://guest:guest@rabbitmq:5672
-      - JwtSettings__Secret=AgroSolutionsSecretKey2024SuperSecure!
-      - JwtSettings__Issuer=AgroSolutions
-      - JwtSettings__Audience=AgroSolutions
+      - PathBase=/api/sensors
+      - MongoDB__ConnectionString=mongodb://mongodb:27017/agrosolutions
+      - MongoDB__Database=agrosolutions
+      - RabbitMQ__ConnectionString=amqp://guest:guest@rabbitmq:5672
       - Otel__Endpoint=http://otel-collector:4317
     networks:
       - agrosolutions-network
@@ -145,8 +148,9 @@ services:
     container_name: agrosolutions-alert-worker
     environment:
       - DOTNET_ENVIRONMENT=Development
-      - ConnectionStrings__MongoDB=mongodb://mongodb:27017/agrosolutions
-      - ConnectionStrings__RabbitMQ=amqp://guest:guest@rabbitmq:5672
+      - MongoDB__ConnectionString=mongodb://mongodb:27017/agrosolutions
+      - MongoDB__Database=agrosolutions
+      - RabbitMQ__ConnectionString=amqp://guest:guest@rabbitmq:5672
       - Otel__Endpoint=http://otel-collector:4317
     networks:
       - agrosolutions-network

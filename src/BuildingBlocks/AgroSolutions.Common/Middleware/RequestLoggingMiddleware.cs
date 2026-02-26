@@ -33,6 +33,6 @@ public class RequestLoggingMiddleware
     }
 
     private static bool IsHealthCheck(string path) =>
-        path.Equals("/health", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/health", StringComparison.OrdinalIgnoreCase) ||
         path.Equals("/liveness", StringComparison.OrdinalIgnoreCase);
 }
