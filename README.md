@@ -210,7 +210,7 @@ AgroSolutions/
 
 ## Equipe
 
-- Daniel - FIAP 8NETT
+- Daniel - Guilherme - Abrão
 
 ## Licenca
 
