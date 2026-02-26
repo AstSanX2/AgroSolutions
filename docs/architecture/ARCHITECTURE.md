@@ -7,82 +7,113 @@ AgroSolutions segue uma **arquitetura de microsservicos** event-driven, onde cad
 ## Diagrama de Arquitetura
 
 ```mermaid
-graph TB
-    subgraph Clientes
-        USER[Usuario Web/Mobile]
-        IOT[Sensores IoT]
-    end
+---
+config:
+  theme: base
+  themeVariables:
+    primaryColor: '#f5f5f5'
+    edgeLabelBackground: '#ffffff'
+    tertiaryColor: '#ffffff'
+  flowchart:
+    curve: basis
+  layout: dagre
+---
+flowchart LR
+ subgraph Clientes["Clientes"]
+    direction TB
+        USER(("👤\nUsuario Web / Mobile"))
+        IOT(("📶\nSensores IoT"))
+  end
 
-    subgraph "API Gateway (:5000)"
-        GW[YARP Reverse Proxy]
-    end
+ subgraph APIGW["API Gateway (:5000)"]
+        GW["YARP Reverse Proxy"]
+  end
 
-    subgraph "Identity Service (:5001)"
-        ID_API[Identity API]
-        ID_DB[(MongoDB<br/>users)]
+ subgraph SERVICOS["Serviços Internos"]
+    direction TB
+    subgraph IDENTITY["Identity Service (:5001)"]
+        direction TB
+        ID_API["Identity API"]
+        ID_DB[("MongoDB<br>users")]
     end
-
-    subgraph "Property Service (:5002)"
-        PR_API[Property API]
-        PR_CONS[SensorUpdate Consumer]
-        PR_DB[(MongoDB<br/>properties)]
+    subgraph PROPERTY["Property Service (:5002)"]
+        direction TB
+        PR_API["Property API"]
+        PR_CONS["SensorUpdate Consumer"]
+        PR_DB[("MongoDB<br>properties")]
     end
-
-    subgraph "DataIngestion Service (:5003)"
-        DI_API[DataIngestion API]
-        DI_DB[(MongoDB<br/>sensor_readings)]
+    subgraph DATAING["DataIngestion Service (:5003)"]
+        direction TB
+        DI_API["DataIngestion API"]
+        DI_DB[("MongoDB<br>sensor_readings")]
     end
+  end
 
-    subgraph "Alert Service (Worker)"
-        AW_CONS[SensorData Consumer]
-        AW_RULES[Alert Rules Engine]
-        AW_DB[(MongoDB<br/>alerts)]
-    end
+ subgraph MQ["Mensageria"]
+        RMQ_ALERT[/"alert-sensor-queue"/]
+        RMQ_UPDATE[/"property-sensor-update-queue"/]
+        RMQ_STATUS[/"property-alert-status-queue"/]
+  end
 
-    subgraph "Mensageria"
-        RMQ_ALERT[alert-sensor-queue]
-        RMQ_UPDATE[property-sensor-update-queue]
-        RMQ_STATUS[property-alert-status-queue]
-    end
+ subgraph ALERT["Alert Service (Worker)"]
+    direction TB
+        AW_CONS["SensorData Consumer"]
+        AW_RULES["Alert Rules Engine"]
+        AW_DB[("MongoDB<br>alerts")]
+  end
 
-    subgraph "Observabilidade"
-        OTEL[OpenTelemetry Collector]
-        GRAFANA[Grafana Dashboards]
-    end
+ subgraph OBS["Observabilidade"]
+        OTEL["OpenTelemetry Collector"]
+        GRAFANA(("📊 Grafana Dashboards"))
+  end
 
-    %% Fluxo de autenticacao
-    USER -->|HTTP| GW
-    GW -->|/api/identity/*| ID_API
+    USER -- HTTP --> GW
+    IOT -- HTTP --> GW
+    GW -- /api/identity/* --> ID_API
     ID_API --> ID_DB
-
-    %% Fluxo de propriedades
-    GW -->|/api/property/*| PR_API
+    GW -- /api/property/* --> PR_API
     PR_API --> PR_DB
-
-    %% Fluxo de ingestao
-    IOT -->|HTTP| GW
-    GW -->|/api/sensors/*| DI_API
+    GW -- /api/sensors/* --> DI_API
     DI_API --> DI_DB
-    DI_API -->|publish| RMQ_ALERT
-    DI_API -->|publish| RMQ_UPDATE
-
-    %% Fluxo de alertas
-    RMQ_ALERT -->|consume| AW_CONS
-    AW_CONS --> AW_RULES
-    AW_CONS --> AW_DB
-    AW_CONS -->|publish| RMQ_STATUS
-
-    %% Fluxo de atualizacao de propriedade
-    RMQ_UPDATE -->|consume| PR_CONS
-    RMQ_STATUS -->|consume| PR_CONS
+    DI_API -- publish --> RMQ_ALERT & RMQ_UPDATE
+    RMQ_ALERT -- consume --> AW_CONS
+    AW_CONS --> AW_RULES & AW_DB
+    AW_CONS -- publish --> RMQ_STATUS
+    RMQ_UPDATE -- consume --> PR_CONS
+    RMQ_STATUS -- consume --> PR_CONS
     PR_CONS --> PR_DB
+    ID_API -. OTLP .-> OTEL
+    PR_API -. OTLP .-> OTEL
+    DI_API -. OTLP .-> OTEL
+    AW_CONS -. OTLP .-> OTEL
+    OTEL -. Prometheus .-> GRAFANA
 
-    %% Observabilidade
-    ID_API -.->|OTLP| OTEL
-    PR_API -.->|OTLP| OTEL
-    DI_API -.->|OTLP| OTEL
-    AW_CONS -.->|OTLP| OTEL
-    OTEL -.->|Prometheus| GRAFANA
+     USER:::clientes
+     IOT:::clientes
+     GW:::gateway
+     ID_API:::identity
+     ID_DB:::identity
+     PR_API:::property
+     PR_CONS:::property
+     PR_DB:::property
+     DI_API:::ingestion
+     DI_DB:::ingestion
+     AW_CONS:::alert
+     AW_RULES:::alert
+     AW_DB:::alert
+     RMQ_ALERT:::mq
+     RMQ_UPDATE:::mq
+     RMQ_STATUS:::mq
+     OTEL:::observ
+     GRAFANA:::observ
+    classDef clientes fill:#e3f2fd,stroke:#2196f3,stroke-width:1px
+    classDef gateway fill:#e8f5e9,stroke:#4caf50,stroke-width:1px
+    classDef identity fill:#fff3e0,stroke:#ff9800,stroke-width:1px
+    classDef property fill:#f3e5f5,stroke:#9c27b0,stroke-width:1px
+    classDef ingestion fill:#e0f7fa,stroke:#00bcd4,stroke-width:1px
+    classDef alert fill:#ffebee,stroke:#f44336,stroke-width:1px
+    classDef mq fill:#f1f8e9,stroke:#8bc34a,stroke-width:1px
+    classDef observ fill:#ede7f6,stroke:#673ab7,stroke-width:1px
 ```
 
 ## Microsservicos
