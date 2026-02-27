@@ -26,8 +26,8 @@ spec:
             - name: DataIngestionApiUrl
               value: "http://dataingestion-api/api/sensors"
             - name: IntervalSeconds
-              value: "30"
+              value: "5"
             - name: RefreshEveryNCycles
               value: "10"
             - name: AlertChancePercent
-              value: "15"
+              value: "20"

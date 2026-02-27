@@ -34,6 +34,8 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "Servico de ingestao de dados de sensores IoT"
     });
+    c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+    c.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
 });
 
 // Health checks

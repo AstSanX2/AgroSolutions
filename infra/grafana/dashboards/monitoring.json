@@ -13,16 +13,19 @@
         "type": "query",
         "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
         "query": {
-          "refId": "variable",
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "http://property-api:8080/api/properties/monitoring/properties",
-          "url_options": { "method": "GET" },
-          "columns": [
-            { "selector": "nome", "text": "nome", "type": "string" },
-            { "selector": "id", "text": "id", "type": "string" }
-          ]
+          "queryType": "infinity",
+          "infinityQuery": {
+            "refId": "variable",
+            "type": "json",
+            "source": "url",
+            "url": "http://property-api:8080/api/properties/monitoring/properties",
+            "url_options": { "method": "GET" },
+            "root_selector": "",
+            "columns": [
+              { "selector": "nome", "text": "nome", "type": "string" },
+              { "selector": "id", "text": "id", "type": "string" }
+            ]
+          }
         },
         "refresh": 1,
         "sort": 1,
@@ -37,16 +40,19 @@
         "type": "query",
         "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
         "query": {
-          "refId": "variable",
-          "type": "json",
-          "source": "url",
-          "format": "table",
-          "url": "http://property-api:8080/api/properties/monitoring/properties/${propertyId}/plots",
-          "url_options": { "method": "GET" },
-          "columns": [
-            { "selector": "nome", "text": "nome", "type": "string" },
-            { "selector": "id", "text": "id", "type": "string" }
-          ]
+          "queryType": "infinity",
+          "infinityQuery": {
+            "refId": "variable",
+            "type": "json",
+            "source": "url",
+            "url": "http://property-api:8080/api/properties/monitoring/properties/${propertyId}/plots",
+            "url_options": { "method": "GET" },
+            "root_selector": "",
+            "columns": [
+              { "selector": "nome", "text": "nome", "type": "string" },
+              { "selector": "id", "text": "id", "type": "string" }
+            ]
+          }
         },
         "refresh": 1,
         "sort": 1,

@@ -13,7 +13,7 @@ var config = new ConfigurationBuilder()
 
 var mongoConnectionString = config["MongoDB:ConnectionString"] ?? "mongodb://localhost:27017/agrosolutions";
 var apiUrl = config["DataIngestionApiUrl"] ?? "http://localhost:5000/api/sensors";
-var intervalSeconds = int.Parse(config["IntervalSeconds"] ?? "30");
+var intervalSeconds = int.Parse(config["IntervalSeconds"] ?? "5");
 var refreshEveryNCycles = int.Parse(config["RefreshEveryNCycles"] ?? "10");
 var alertChance = double.Parse(config["AlertChancePercent"] ?? "15") / 100.0;
 
