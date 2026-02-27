@@ -92,12 +92,12 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
-app.UseRequestLogging("IDENTITY");
-
-// PathBase para funcionar atras do Gateway (/api/identity)
+// PathBase para funcionar atras do Gateway (/api/auth)
 var pathBase = builder.Configuration["PathBase"] ?? "";
 if (!string.IsNullOrEmpty(pathBase))
     app.UsePathBase(pathBase);
+
+app.UseRequestLogging("IDENTITY");
 
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.json", "Identity API v1"));
@@ -110,7 +110,6 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 {
     Predicate = check => check.Tags.Contains("ready")
 });
-app.MapGet("/", () => Results.Ok(new { service = "Identity API", status = "running" }));
 app.MapControllers();
 
 app.Run();

@@ -47,6 +47,14 @@ public class PropertyRepository : IPropertyRepository
         await _context.Properties.ReplaceOneAsync(p => p.Id == property.Id, property);
     }
 
+    public async Task<List<FarmProperty>> GetAllActiveAsync()
+    {
+        return await _context.Properties
+            .Find(p => p.Ativo)
+            .SortByDescending(p => p.DataCadastro)
+            .ToListAsync();
+    }
+
     public async Task<bool> NameExistsForOwnerAsync(string ownerId, string nome, string? excludeId = null)
     {
         var filter = Builders<FarmProperty>.Filter.And(

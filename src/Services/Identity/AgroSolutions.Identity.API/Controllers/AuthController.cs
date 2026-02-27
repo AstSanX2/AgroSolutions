@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 namespace AgroSolutions.Identity.API.Controllers;
 
 [ApiController]
-[Route("auth")]
+[Route("")]
 public class AuthController : ControllerBase
 {
     private static readonly Meter Meter = new("AgroSolutions.Identity", "1.0.0");

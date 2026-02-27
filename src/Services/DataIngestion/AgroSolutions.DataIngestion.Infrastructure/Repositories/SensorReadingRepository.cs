@@ -62,6 +62,24 @@ public class SensorReadingRepository : ISensorReadingRepository
         return results;
     }
 
+    public async Task<List<SensorReading>> GetByPropertyAsync(
+        string propertyId, string? plotId, SensorType? sensorType, int limit)
+    {
+        var builder = Builders<SensorReading>.Filter;
+        var filter = builder.Eq(r => r.PropertyId, propertyId);
+
+        if (!string.IsNullOrEmpty(plotId))
+            filter &= builder.Eq(r => r.PlotId, plotId);
+        if (sensorType.HasValue)
+            filter &= builder.Eq(r => r.SensorType, sensorType.Value);
+
+        return await _context.SensorReadings
+            .Find(filter)
+            .SortByDescending(r => r.Timestamp)
+            .Limit(limit)
+            .ToListAsync();
+    }
+
     private static FilterDefinition<SensorReading> BuildFilter(
         string propertyId, string plotId,
         SensorType? sensorType, DateTime? startDate, DateTime? endDate)

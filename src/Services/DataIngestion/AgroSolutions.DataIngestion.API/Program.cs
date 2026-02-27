@@ -49,12 +49,12 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
-app.UseRequestLogging("DATAINGESTION");
-
 // PathBase para funcionar atras do Gateway (/api/sensors)
 var pathBase = builder.Configuration["PathBase"] ?? "";
 if (!string.IsNullOrEmpty(pathBase))
     app.UsePathBase(pathBase);
+
+app.UseRequestLogging("DATAINGESTION");
 
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.json", "DataIngestion API v1"));
@@ -64,7 +64,6 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 {
     Predicate = check => check.Tags.Contains("ready")
 });
-app.MapGet("/", () => Results.Ok(new { service = "DataIngestion API", status = "running" }));
 app.MapControllers();
 
 app.Run();

@@ -10,4 +10,5 @@ public interface IPropertyRepository
     Task CreateAsync(FarmProperty property);
     Task UpdateAsync(FarmProperty property);
     Task<bool> NameExistsForOwnerAsync(string ownerId, string nome, string? excludeId = null);
+    Task<List<FarmProperty>> GetAllActiveAsync();
 }

@@ -21,7 +21,7 @@ spec:
             - containerPort: 8080
           env:
             - name: PathBase
-              value: "/api/identity"
+              value: "/api/auth"
           envFrom:
             - configMapRef:
                 name: agrosolutions-config

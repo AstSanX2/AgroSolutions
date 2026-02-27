@@ -99,12 +99,12 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
-app.UseRequestLogging("PROPERTY");
-
-// PathBase para funcionar atras do Gateway (/api/property)
+// PathBase para funcionar atras do Gateway (/api/properties)
 var pathBase = builder.Configuration["PathBase"] ?? "";
 if (!string.IsNullOrEmpty(pathBase))
     app.UsePathBase(pathBase);
+
+app.UseRequestLogging("PROPERTY");
 
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.json", "Property API v1"));
@@ -117,7 +117,6 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 {
     Predicate = check => check.Tags.Contains("ready")
 });
-app.MapGet("/", () => Results.Ok(new { service = "Property API", status = "running" }));
 app.MapControllers();
 
 app.Run();
