@@ -10,7 +10,7 @@
       "title": "Servicos Ativos",
       "description": "Quantidade de servicos enviando metricas",
       "type": "stat",
-      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 0 },
+      "gridPos": { "h": 5, "w": 8, "x": 0, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
@@ -33,9 +33,9 @@
     },
     {
       "title": "Total de Requests",
-      "description": "Total acumulado de requisicoes HTTP",
+      "description": "Total acumulado de requisicoes HTTP em todos os servicos",
       "type": "stat",
-      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 0 },
+      "gridPos": { "h": 5, "w": 8, "x": 8, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
@@ -56,60 +56,20 @@
       }
     },
     {
-      "title": "Leituras de Sensores",
-      "description": "Total de leituras recebidas pelo DataIngestion",
-      "type": "stat",
-      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 0 },
+      "title": "Requests por Status Code",
+      "description": "Distribuicao de respostas HTTP por status code",
+      "type": "piechart",
+      "gridPos": { "h": 5, "w": 8, "x": 16, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum(agrosolutions_sensor_readings_total) or vector(0)",
-          "legendFormat": "Leituras"
+          "expr": "sum by (http_response_status_code) (agrosolutions_http_server_request_duration_seconds_count)",
+          "legendFormat": "HTTP {{http_response_status_code}}"
         }
       ],
       "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "steps": [
-              { "color": "blue", "value": null },
-              { "color": "green", "value": 100 }
-            ]
-          }
-        },
+        "defaults": {},
         "overrides": []
-      }
-    },
-    {
-      "title": "Alertas Disparados / Normalizados",
-      "description": "Total de alertas disparados vs normalizados",
-      "type": "stat",
-      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "expr": "sum(agrosolutions_alerts_triggered_total) or vector(0)",
-          "legendFormat": "Disparados"
-        },
-        {
-          "expr": "sum(agrosolutions_alerts_normalized_total) or vector(0)",
-          "legendFormat": "Normalizados"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 5 },
-              { "color": "red", "value": 20 }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "graphMode": "area",
-        "textMode": "value_and_name"
       }
     },
     {
@@ -197,132 +157,10 @@
       }
     },
     {
-      "title": "Requests por Status Code",
-      "description": "Distribuicao de respostas HTTP por status code",
-      "type": "piechart",
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 21 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "expr": "sum by (http_response_status_code) (agrosolutions_http_server_request_duration_seconds_count)",
-          "legendFormat": "HTTP {{http_response_status_code}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      }
-    },
-    {
-      "title": "Leituras de Sensores por Tipo",
-      "description": "Distribuicao de leituras por tipo de sensor",
-      "type": "piechart",
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 21 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "expr": "sum by (sensor_type) (agrosolutions_sensor_readings_total)",
-          "legendFormat": "{{sensor_type}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      }
-    },
-    {
-      "title": "Alertas por Tipo",
-      "description": "Distribuicao de alertas disparados por tipo",
-      "type": "piechart",
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 21 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "expr": "sum by (alert_type) (agrosolutions_alerts_triggered_total)",
-          "legendFormat": "{{alert_type}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      }
-    },
-    {
-      "title": "Taxa de Leituras de Sensores (por segundo)",
-      "description": "Velocidade de ingestao de dados de sensores",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 29 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "expr": "sum by (sensor_type) (rate(agrosolutions_sensor_readings_total[5m]))",
-          "legendFormat": "{{sensor_type}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": { "drawStyle": "line", "fillOpacity": 20, "pointSize": 3, "showPoints": "auto" },
-          "unit": "reqps",
-          "color": { "mode": "palette-classic" }
-        },
-        "overrides": []
-      }
-    },
-    {
-      "title": "Taxa de Alertas (disparados vs normalizados)",
-      "description": "Timeline de alertas disparados e normalizados",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 29 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "expr": "sum(rate(agrosolutions_alerts_triggered_total[5m]))",
-          "legendFormat": "Alertas Disparados"
-        },
-        {
-          "expr": "sum(rate(agrosolutions_alerts_normalized_total[5m]))",
-          "legendFormat": "Alertas Normalizados"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": { "drawStyle": "line", "fillOpacity": 15, "pointSize": 3, "showPoints": "auto" },
-          "unit": "reqps",
-          "color": { "mode": "palette-classic" }
-        },
-        "overrides": []
-      }
-    },
-    {
-      "title": "Logins e Registros",
-      "description": "Taxa de autenticacoes e registros de usuarios",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 37 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [
-        {
-          "expr": "rate(agrosolutions_auth_login_total[5m])",
-          "legendFormat": "Logins/s"
-        },
-        {
-          "expr": "rate(agrosolutions_auth_register_total[5m])",
-          "legendFormat": "Registros/s"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": { "drawStyle": "line", "fillOpacity": 15, "pointSize": 3, "showPoints": "auto" },
-          "unit": "reqps",
-          "color": { "mode": "palette-classic" }
-        },
-        "overrides": []
-      }
-    },
-    {
       "title": "Requisicoes por Metodo HTTP",
       "description": "Distribuicao de requests por metodo (GET, POST, PUT, DELETE)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 37 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 21 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
