@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "AgroSolutions",
-    "description": "Colecao completa de endpoints da plataforma AgroSolutions",
+    "description": "Colecao completa de endpoints da plataforma AgroSolutions.\n\nFluxo recomendado:\n1. Register ou Login para obter o token\n2. Criar uma Property\n3. Criar Plots (talhoes) na property\n4. Enviar leituras de sensores\n5. Consultar historico e ultimas leituras",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -25,6 +25,7 @@
   "item": [
     {
       "name": "1. Auth",
+      "description": "Endpoints de autenticacao (Identity API).\nRegistre um usuario e faca login para obter o JWT token.",
       "item": [
         {
           "name": "Register",
@@ -36,6 +37,7 @@
                   "if (pm.response.code === 201) {",
                   "    var json = pm.response.json();",
                   "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token salvo automaticamente');",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -52,10 +54,11 @@
               "raw": "{\n  \"nome\": \"Daniel Silva\",\n  \"email\": \"daniel@agrosolutions.com\",\n  \"senha\": \"Senha@123\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/identity/auth/register",
+              "raw": "{{baseUrl}}/api/auth/register",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "identity", "auth", "register"]
-            }
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Registrar um novo usuario. O token JWT e salvo automaticamente na variavel {{token}}."
           }
         },
         {
@@ -68,6 +71,7 @@
                   "if (pm.response.code === 200) {",
                   "    var json = pm.response.json();",
                   "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token salvo automaticamente');",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -84,10 +88,11 @@
               "raw": "{\n  \"email\": \"daniel@agrosolutions.com\",\n  \"senha\": \"Senha@123\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/identity/auth/login",
+              "raw": "{{baseUrl}}/api/auth/login",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "identity", "auth", "login"]
-            }
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Autenticar usuario existente. O token JWT e salvo automaticamente na variavel {{token}}."
           }
         },
         {
@@ -98,16 +103,18 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/identity/auth/me",
+              "raw": "{{baseUrl}}/api/auth/me",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "identity", "auth", "me"]
-            }
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Retorna os dados do usuario autenticado. Requer token JWT."
           }
         }
       ]
     },
     {
       "name": "2. Properties",
+      "description": "CRUD de propriedades rurais (Property API).\nTodos os endpoints requerem autenticacao (Bearer token).",
       "item": [
         {
           "name": "Create Property",
@@ -119,6 +126,7 @@
                   "if (pm.response.code === 201) {",
                   "    var json = pm.response.json();",
                   "    pm.collectionVariables.set('propertyId', json.id);",
+                  "    console.log('propertyId salvo: ' + json.id);",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -136,10 +144,11 @@
               "raw": "{\n  \"nome\": \"Fazenda Santa Maria\",\n  \"endereco\": \"Rodovia SP-310, km 120 - Sao Carlos, SP\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/property",
+              "raw": "{{baseUrl}}/api/properties",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "property"]
-            }
+              "path": ["api", "properties"]
+            },
+            "description": "Criar nova propriedade. O ID e salvo automaticamente na variavel {{propertyId}}."
           }
         },
         {
@@ -150,14 +159,15 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/property?page=1&pageSize=10",
+              "raw": "{{baseUrl}}/api/properties?page=1&pageSize=10",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "property"],
+              "path": ["api", "properties"],
               "query": [
                 { "key": "page", "value": "1" },
                 { "key": "pageSize", "value": "10" }
               ]
-            }
+            },
+            "description": "Listar propriedades do usuario autenticado com paginacao."
           }
         },
         {
@@ -168,10 +178,11 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/property/{{propertyId}}",
+              "raw": "{{baseUrl}}/api/properties/{{propertyId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "property", "{{propertyId}}"]
-            }
+              "path": ["api", "properties", "{{propertyId}}"]
+            },
+            "description": "Obter detalhes de uma propriedade especifica, incluindo seus talhoes."
           }
         },
         {
@@ -187,10 +198,11 @@
               "raw": "{\n  \"nome\": \"Fazenda Santa Maria Atualizada\",\n  \"endereco\": \"Rodovia SP-310, km 125 - Sao Carlos, SP\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/property/{{propertyId}}",
+              "raw": "{{baseUrl}}/api/properties/{{propertyId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "property", "{{propertyId}}"]
-            }
+              "path": ["api", "properties", "{{propertyId}}"]
+            },
+            "description": "Atualizar nome e endereco de uma propriedade."
           }
         },
         {
@@ -201,16 +213,18 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/property/{{propertyId}}",
+              "raw": "{{baseUrl}}/api/properties/{{propertyId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "property", "{{propertyId}}"]
-            }
+              "path": ["api", "properties", "{{propertyId}}"]
+            },
+            "description": "Remover propriedade (soft delete - marca como inativa)."
           }
         }
       ]
     },
     {
-      "name": "3. Plots",
+      "name": "3. Plots (Talhoes)",
+      "description": "CRUD de talhoes dentro de uma propriedade (Property API).\nTodos os endpoints requerem autenticacao e um propertyId valido.",
       "item": [
         {
           "name": "Create Plot",
@@ -222,6 +236,7 @@
                   "if (pm.response.code === 201) {",
                   "    var json = pm.response.json();",
                   "    pm.collectionVariables.set('plotId', json.id);",
+                  "    console.log('plotId salvo: ' + json.id);",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -239,10 +254,11 @@
               "raw": "{\n  \"nome\": \"Talhao Norte\",\n  \"area\": 150.5,\n  \"latitude\": -22.0087,\n  \"longitude\": -47.8909,\n  \"culturaNome\": \"Soja\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/property/{{propertyId}}/plots",
+              "raw": "{{baseUrl}}/api/properties/{{propertyId}}/plots",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "property", "{{propertyId}}", "plots"]
-            }
+              "path": ["api", "properties", "{{propertyId}}", "plots"]
+            },
+            "description": "Criar um talhao na propriedade. O ID e salvo automaticamente na variavel {{plotId}}."
           }
         },
         {
@@ -253,10 +269,11 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/property/{{propertyId}}/plots",
+              "raw": "{{baseUrl}}/api/properties/{{propertyId}}/plots",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "property", "{{propertyId}}", "plots"]
-            }
+              "path": ["api", "properties", "{{propertyId}}", "plots"]
+            },
+            "description": "Listar todos os talhoes de uma propriedade."
           }
         },
         {
@@ -267,10 +284,11 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/property/{{propertyId}}/plots/{{plotId}}",
+              "raw": "{{baseUrl}}/api/properties/{{propertyId}}/plots/{{plotId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "property", "{{propertyId}}", "plots", "{{plotId}}"]
-            }
+              "path": ["api", "properties", "{{propertyId}}", "plots", "{{plotId}}"]
+            },
+            "description": "Obter detalhes de um talhao especifico, incluindo dados da cultura e sensores."
           }
         },
         {
@@ -286,10 +304,11 @@
               "raw": "{\n  \"nome\": \"Talhao Norte Atualizado\",\n  \"area\": 200.0,\n  \"latitude\": -22.0087,\n  \"longitude\": -47.8909,\n  \"culturaNome\": \"Milho\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/property/{{propertyId}}/plots/{{plotId}}",
+              "raw": "{{baseUrl}}/api/properties/{{propertyId}}/plots/{{plotId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "property", "{{propertyId}}", "plots", "{{plotId}}"]
-            }
+              "path": ["api", "properties", "{{propertyId}}", "plots", "{{plotId}}"]
+            },
+            "description": "Atualizar dados do talhao (nome, area, coordenadas e cultura)."
           }
         },
         {
@@ -300,16 +319,18 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/property/{{propertyId}}/plots/{{plotId}}",
+              "raw": "{{baseUrl}}/api/properties/{{propertyId}}/plots/{{plotId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "property", "{{propertyId}}", "plots", "{{plotId}}"]
-            }
+              "path": ["api", "properties", "{{propertyId}}", "plots", "{{plotId}}"]
+            },
+            "description": "Remover um talhao da propriedade."
           }
         }
       ]
     },
     {
       "name": "4. Sensors",
+      "description": "Ingestao e consulta de dados de sensores IoT (DataIngestion API).\nEndpoints de POST nao requerem autenticacao (sensores enviam diretamente).",
       "item": [
         {
           "name": "Post Humidity Reading",
@@ -320,13 +341,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 45.5,\n  \"timestamp\": \"2025-01-15T10:30:00Z\"\n}"
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 55.0,\n  \"timestamp\": \"2025-06-15T10:30:00Z\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sensors/humidity",
               "host": ["{{baseUrl}}"],
               "path": ["api", "sensors", "humidity"]
-            }
+            },
+            "description": "Enviar leitura de umidade do solo. Valores validos: 0 a 100 (%)."
           }
         },
         {
@@ -338,13 +360,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 32.0,\n  \"timestamp\": \"2025-01-15T10:30:00Z\"\n}"
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 28.5,\n  \"timestamp\": \"2025-06-15T10:30:00Z\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sensors/temperature",
               "host": ["{{baseUrl}}"],
               "path": ["api", "sensors", "temperature"]
-            }
+            },
+            "description": "Enviar leitura de temperatura. Valores validos: -50 a 60 (C)."
           }
         },
         {
@@ -356,17 +379,18 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 12.3,\n  \"timestamp\": \"2025-01-15T10:30:00Z\"\n}"
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 12.3,\n  \"timestamp\": \"2025-06-15T10:30:00Z\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sensors/rainfall",
               "host": ["{{baseUrl}}"],
               "path": ["api", "sensors", "rainfall"]
-            }
+            },
+            "description": "Enviar leitura de precipitacao. Valores validos: >= 0 (mm)."
           }
         },
         {
-          "name": "Post Low Humidity (triggers alert)",
+          "name": "Post Low Humidity (triggers drought alert)",
           "request": {
             "method": "POST",
             "header": [
@@ -374,13 +398,52 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 15.0,\n  \"timestamp\": \"2025-01-15T11:00:00Z\"\n}"
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 12.0,\n  \"timestamp\": \"2025-06-15T11:00:00Z\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sensors/humidity",
               "host": ["{{baseUrl}}"],
               "path": ["api", "sensors", "humidity"]
-            }
+            },
+            "description": "Enviar umidade baixa (< 20%) para disparar alerta de seca critico."
+          }
+        },
+        {
+          "name": "Post High Temperature (triggers temp alert)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 42.0,\n  \"timestamp\": \"2025-06-15T14:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/temperature",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "temperature"]
+            },
+            "description": "Enviar temperatura alta (> 40C) para disparar alerta de temperatura critica."
+          }
+        },
+        {
+          "name": "Post Heavy Rainfall (triggers rain alert)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"plotId\": \"{{plotId}}\",\n  \"value\": 85.0,\n  \"timestamp\": \"2025-06-15T16:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/rainfall",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "rainfall"]
+            },
+            "description": "Enviar precipitacao intensa (> 50mm) para disparar alerta de chuva intensa."
           }
         },
         {
@@ -393,10 +456,14 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "sensors", "{{propertyId}}", "{{plotId}}"],
               "query": [
+                { "key": "sensorType", "value": "Humidity", "disabled": true },
+                { "key": "startDate", "value": "2025-01-01T00:00:00Z", "disabled": true },
+                { "key": "endDate", "value": "2025-12-31T23:59:59Z", "disabled": true },
                 { "key": "page", "value": "1" },
                 { "key": "pageSize", "value": "20" }
               ]
-            }
+            },
+            "description": "Listar leituras historicas de um talhao com paginacao.\n\nFiltros opcionais (desabilitados por padrao):\n- sensorType: Humidity, Temperature ou Rainfall\n- startDate / endDate: filtrar por periodo (formato ISO 8601)"
           }
         },
         {
@@ -408,13 +475,15 @@
               "raw": "{{baseUrl}}/api/sensors/{{propertyId}}/{{plotId}}/latest",
               "host": ["{{baseUrl}}"],
               "path": ["api", "sensors", "{{propertyId}}", "{{plotId}}", "latest"]
-            }
+            },
+            "description": "Retornar a ultima leitura de cada tipo de sensor (humidity, temperature, rainfall) para o talhao."
           }
         }
       ]
     },
     {
       "name": "5. Health Checks",
+      "description": "Endpoints de health check de todos os servicos.\nHealth basico (/health) e readiness (/health/ready) que verifica dependencias (MongoDB, RabbitMQ).",
       "item": [
         {
           "name": "Gateway Health",
@@ -424,29 +493,80 @@
               "raw": "{{baseUrl}}/health",
               "host": ["{{baseUrl}}"],
               "path": ["health"]
-            }
+            },
+            "description": "Health check do API Gateway (porta 5000)."
           }
         },
         {
-          "name": "Identity Health",
+          "name": "Identity API - Health",
           "request": {
             "method": "GET",
             "url": {
               "raw": "http://localhost:5001/health",
               "host": ["http://localhost:5001"],
               "path": ["health"]
-            }
+            },
+            "description": "Health check basico do Identity API."
           }
         },
         {
-          "name": "Identity Readiness",
+          "name": "Identity API - Readiness",
           "request": {
             "method": "GET",
             "url": {
               "raw": "http://localhost:5001/health/ready",
               "host": ["http://localhost:5001"],
               "path": ["health", "ready"]
-            }
+            },
+            "description": "Readiness check do Identity API (verifica conexao com MongoDB)."
+          }
+        },
+        {
+          "name": "Property API - Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/health",
+              "host": ["http://localhost:5002"],
+              "path": ["health"]
+            },
+            "description": "Health check basico do Property API."
+          }
+        },
+        {
+          "name": "Property API - Readiness",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5002/health/ready",
+              "host": ["http://localhost:5002"],
+              "path": ["health", "ready"]
+            },
+            "description": "Readiness check do Property API (verifica conexao com MongoDB e RabbitMQ)."
+          }
+        },
+        {
+          "name": "DataIngestion API - Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5003/health",
+              "host": ["http://localhost:5003"],
+              "path": ["health"]
+            },
+            "description": "Health check basico do DataIngestion API."
+          }
+        },
+        {
+          "name": "DataIngestion API - Readiness",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5003/health/ready",
+              "host": ["http://localhost:5003"],
+              "path": ["health", "ready"]
+            },
+            "description": "Readiness check do DataIngestion API (verifica conexao com MongoDB e RabbitMQ)."
           }
         }
       ]
