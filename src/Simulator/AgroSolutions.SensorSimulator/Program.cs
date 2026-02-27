@@ -11,7 +11,7 @@ var config = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
-var mongoConnectionString = config["MongoDB__ConnectionString"] ?? "mongodb://localhost:27017/agrosolutions";
+var mongoConnectionString = config["MongoDB:ConnectionString"] ?? "mongodb://localhost:27017/agrosolutions";
 var apiUrl = config["DataIngestionApiUrl"] ?? "http://localhost:5000/api/sensors";
 var intervalSeconds = int.Parse(config["IntervalSeconds"] ?? "30");
 var refreshEveryNCycles = int.Parse(config["RefreshEveryNCycles"] ?? "10");
@@ -29,7 +29,7 @@ Console.WriteLine("Pressione Ctrl+C para parar.\n");
 var mongoClient = new MongoClient(mongoConnectionString);
 var databaseName = MongoUrl.Create(mongoConnectionString).DatabaseName ?? "agrosolutions";
 var database = mongoClient.GetDatabase(databaseName);
-var propertiesCollection = database.GetCollection<FarmPropertyDoc>("Properties");
+var propertiesCollection = database.GetCollection<FarmPropertyDoc>("properties");
 
 using var httpClient = new HttpClient();
 var random = new Random();
@@ -172,6 +172,7 @@ static async Task SendReading(string propertyId, string plotId, string type, dec
 }
 
 // Minimal MongoDB document classes (mirror of Property domain)
+[BsonIgnoreExtraElements]
 public class FarmPropertyDoc
 {
     [BsonId]
