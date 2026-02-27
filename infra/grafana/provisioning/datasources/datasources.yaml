@@ -5,7 +5,7 @@ datasources:
     type: prometheus
     uid: prometheus
     access: proxy
-    url: http://otel-collector:8889
+    url: http://prometheus:9090
     isDefault: true
     editable: false
 

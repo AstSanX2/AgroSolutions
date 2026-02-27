@@ -13,5 +13,6 @@ resources:
   - property-api.yaml
   - dataingestion-api.yaml
   - alert-worker.yaml
+  - sensor-simulator.yaml
   - gateway.yaml
   - ingress.yaml

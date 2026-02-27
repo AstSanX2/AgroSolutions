@@ -1,6 +1,9 @@
 using AgroSolutions.DataIngestion.Domain.Enums;
 using AgroSolutions.DataIngestion.Domain.Interfaces;
+using AgroSolutions.DataIngestion.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace AgroSolutions.DataIngestion.API.Controllers;
 
@@ -10,10 +13,12 @@ namespace AgroSolutions.DataIngestion.API.Controllers;
 public class MonitoringController : ControllerBase
 {
     private readonly ISensorReadingRepository _repository;
+    private readonly MongoDbContext _dbContext;
 
-    public MonitoringController(ISensorReadingRepository repository)
+    public MonitoringController(ISensorReadingRepository repository, MongoDbContext dbContext)
     {
         _repository = repository;
+        _dbContext = dbContext;
     }
 
     [HttpGet("readings")]
@@ -33,12 +38,20 @@ public class MonitoringController : ControllerBase
         if (!string.IsNullOrEmpty(sensorType) && Enum.TryParse<SensorType>(sensorType, true, out var st))
             parsedType = st;
 
-        var readings = await _repository.GetByPropertyAsync(propertyId, plotId, parsedType, limit);
+        List<string>? plotIds = null;
+        if (!string.IsNullOrEmpty(plotId))
+            plotIds = plotId.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+        var readings = await _repository.GetByPropertyAsync(propertyId, plotIds, parsedType, limit);
+
+        // Build plot name lookup from Properties collection
+        var plotNameMap = await GetPlotNameMap(propertyId);
 
         var result = readings.Select(r => new
         {
             r.PropertyId,
             r.PlotId,
+            PlotNome = plotNameMap.GetValueOrDefault(r.PlotId, r.PlotId),
             SensorType = r.SensorType.ToString(),
             Value = (double)r.Value,
             r.Unit,
@@ -46,5 +59,34 @@ public class MonitoringController : ControllerBase
         });
 
         return Ok(result);
+    }
+
+    private async Task<Dictionary<string, string>> GetPlotNameMap(string propertyId)
+    {
+        var map = new Dictionary<string, string>();
+        try
+        {
+            var propertiesCollection = _dbContext.Database.GetCollection<BsonDocument>("properties");
+            var property = await propertiesCollection
+                .Find(Builders<BsonDocument>.Filter.Eq("_id", new ObjectId(propertyId)))
+                .FirstOrDefaultAsync();
+
+            if (property != null && property.Contains("talhoes"))
+            {
+                foreach (var talhao in property["talhoes"].AsBsonArray)
+                {
+                    var doc = talhao.AsBsonDocument;
+                    var id = doc["_id"].ToString()!;
+                    var nome = doc.GetValue("nome", "").AsString;
+                    map[id] = !string.IsNullOrEmpty(nome) ? nome : id;
+                }
+            }
+        }
+        catch
+        {
+            // If lookup fails, plotId will be used as fallback
+        }
+
+        return map;
     }
 }

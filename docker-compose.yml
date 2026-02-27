@@ -51,8 +51,19 @@ services:
       - "8889:8889"   # Prometheus exporter
     networks:
       - agrosolutions-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: agrosolutions-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - agrosolutions-network
     depends_on:
-      - grafana
+      - otel-collector
 
   grafana:
     image: grafana/grafana:latest
@@ -70,6 +81,8 @@ services:
       - ./infra/grafana/dashboards:/var/lib/grafana/dashboards
     networks:
       - agrosolutions-network
+    depends_on:
+      - prometheus
 
   # Application Services
   identity-api:
@@ -161,6 +174,26 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  sensor-simulator:
+    build:
+      context: .
+      dockerfile: src/Simulator/AgroSolutions.SensorSimulator/Dockerfile
+    container_name: agrosolutions-sensor-simulator
+    environment:
+      - MongoDB__ConnectionString=mongodb://mongodb:27017/agrosolutions
+      - DataIngestionApiUrl=http://dataingestion-api:8080/api/sensors
+      - IntervalSeconds=30
+      - RefreshEveryNCycles=10
+      - AlertChancePercent=15
+    networks:
+      - agrosolutions-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      dataingestion-api:
+        condition: service_started
+    restart: unless-stopped
+
   gateway:
     build:
       context: .
@@ -188,4 +221,5 @@ networks:
 volumes:
   mongodb_data:
   rabbitmq_data:
+  prometheus_data:
   grafana_data:

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sensor-simulator
+  namespace: agrosolutions
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sensor-simulator
+  template:
+    metadata:
+      labels:
+        app: sensor-simulator
+    spec:
+      containers:
+        - name: sensor-simulator
+          image: agrosolutions-sensor-simulator:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: agrosolutions-config
+            - secretRef:
+                name: agrosolutions-secrets
+          env:
+            - name: DataIngestionApiUrl
+              value: "http://dataingestion-api/api/sensors"
+            - name: IntervalSeconds
+              value: "30"
+            - name: RefreshEveryNCycles
+              value: "10"
+            - name: AlertChancePercent
+              value: "15"

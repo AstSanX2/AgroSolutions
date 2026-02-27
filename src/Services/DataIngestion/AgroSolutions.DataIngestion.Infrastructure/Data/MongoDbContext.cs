@@ -17,6 +17,8 @@ public class MongoDbContext
         CreateIndexes();
     }
 
+    public IMongoDatabase Database => _database;
+
     public IMongoCollection<SensorReading> SensorReadings => _database.GetCollection<SensorReading>("sensor_readings");
 
     private void CreateIndexes()

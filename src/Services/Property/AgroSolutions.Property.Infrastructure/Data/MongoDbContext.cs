@@ -17,6 +17,8 @@ public class MongoDbContext
         CreateIndexes();
     }
 
+    public IMongoDatabase Database => _database;
+
     public IMongoCollection<FarmProperty> Properties => _database.GetCollection<FarmProperty>("properties");
 
     private void CreateIndexes()

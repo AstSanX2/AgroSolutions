@@ -63,13 +63,20 @@ public class SensorReadingRepository : ISensorReadingRepository
     }
 
     public async Task<List<SensorReading>> GetByPropertyAsync(
-        string propertyId, string? plotId, SensorType? sensorType, int limit)
+        string propertyId, IEnumerable<string>? plotIds, SensorType? sensorType, int limit)
     {
         var builder = Builders<SensorReading>.Filter;
         var filter = builder.Eq(r => r.PropertyId, propertyId);
 
-        if (!string.IsNullOrEmpty(plotId))
-            filter &= builder.Eq(r => r.PlotId, plotId);
+        if (plotIds != null)
+        {
+            var plotIdList = plotIds.Where(id => !string.IsNullOrEmpty(id)).ToList();
+            if (plotIdList.Count == 1)
+                filter &= builder.Eq(r => r.PlotId, plotIdList[0]);
+            else if (plotIdList.Count > 1)
+                filter &= builder.In(r => r.PlotId, plotIdList);
+        }
+
         if (sensorType.HasValue)
             filter &= builder.Eq(r => r.SensorType, sensorType.Value);
 

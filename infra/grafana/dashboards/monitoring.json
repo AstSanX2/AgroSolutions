@@ -10,20 +10,51 @@
       {
         "name": "propertyId",
         "label": "Propriedade",
-        "type": "custom",
-        "query": "",
-        "current": { "text": "", "value": "" },
-        "options": [],
-        "description": "ID da propriedade para filtrar"
+        "type": "query",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+        "query": {
+          "refId": "variable",
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://property-api:8080/api/properties/monitoring/properties",
+          "url_options": { "method": "GET" },
+          "columns": [
+            { "selector": "nome", "text": "nome", "type": "string" },
+            { "selector": "id", "text": "id", "type": "string" }
+          ]
+        },
+        "refresh": 1,
+        "sort": 1,
+        "includeAll": false,
+        "multi": false,
+        "regex": "",
+        "current": {}
       },
       {
         "name": "plotId",
         "label": "Talhao",
-        "type": "custom",
-        "query": "",
-        "current": { "text": "", "value": "" },
-        "options": [],
-        "description": "ID do talhao para filtrar"
+        "type": "query",
+        "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+        "query": {
+          "refId": "variable",
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://property-api:8080/api/properties/monitoring/properties/${propertyId}/plots",
+          "url_options": { "method": "GET" },
+          "columns": [
+            { "selector": "nome", "text": "nome", "type": "string" },
+            { "selector": "id", "text": "id", "type": "string" }
+          ]
+        },
+        "refresh": 1,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": "",
+        "multi": true,
+        "regex": "",
+        "current": {}
       }
     ]
   },
@@ -40,20 +71,20 @@
           "type": "json",
           "source": "url",
           "format": "table",
-          "url": "http://property-api:8080/api/properties/monitoring/plots-status",
+          "url": "http://property-api:8080/api/properties/monitoring/plots-status?propertyId=${propertyId}&plotId=${plotId:csv}",
           "url_options": {
             "method": "GET"
           },
           "columns": [
-            { "selector": "PropertyNome", "text": "Propriedade", "type": "string" },
-            { "selector": "PlotNome", "text": "Talhao", "type": "string" },
-            { "selector": "CulturaNome", "text": "Cultura", "type": "string" },
-            { "selector": "Area", "text": "Area (ha)", "type": "number" },
-            { "selector": "Status", "text": "Status", "type": "string" },
-            { "selector": "Umidade", "text": "Umidade (%)", "type": "number" },
-            { "selector": "Temperatura", "text": "Temperatura (C)", "type": "number" },
-            { "selector": "Precipitacao", "text": "Precipitacao (mm)", "type": "number" },
-            { "selector": "UltimaAtualizacao", "text": "Ultima Atualizacao", "type": "timestamp" }
+            { "selector": "propertyNome", "text": "Propriedade", "type": "string" },
+            { "selector": "plotNome", "text": "Talhao", "type": "string" },
+            { "selector": "culturaNome", "text": "Cultura", "type": "string" },
+            { "selector": "area", "text": "Area (ha)", "type": "number" },
+            { "selector": "status", "text": "Status", "type": "string" },
+            { "selector": "umidade", "text": "Umidade (%)", "type": "number" },
+            { "selector": "temperatura", "text": "Temperatura (C)", "type": "number" },
+            { "selector": "precipitacao", "text": "Precipitacao (mm)", "type": "number" },
+            { "selector": "ultimaAtualizacao", "text": "Ultima Atualizacao", "type": "timestamp" }
           ]
         }
       ],
@@ -71,9 +102,9 @@
                 "id": "mappings",
                 "value": [
                   { "type": "value", "options": { "Normal": { "color": "green", "text": "Normal" } } },
-                  { "type": "regex", "options": { "pattern": ".*Seca.*", "result": { "color": "orange", "text": "${__value.text}" } } },
-                  { "type": "regex", "options": { "pattern": ".*Temperatura.*", "result": { "color": "red", "text": "${__value.text}" } } },
-                  { "type": "regex", "options": { "pattern": ".*Chuva.*", "result": { "color": "blue", "text": "${__value.text}" } } }
+                  { "type": "regex", "options": { "pattern": ".*Seca.*", "result": { "color": "orange" } } },
+                  { "type": "regex", "options": { "pattern": ".*Temperatura.*", "result": { "color": "red" } } },
+                  { "type": "regex", "options": { "pattern": ".*Chuva.*", "result": { "color": "blue" } } }
                 ]
               }
             ]
@@ -117,7 +148,7 @@
     },
     {
       "title": "Historico - Umidade do Solo (%)",
-      "description": "Dados historicos de umidade dos sensores por talhao",
+      "description": "Dados historicos de umidade dos sensores. Cada talhao aparece como uma linha separada.",
       "type": "timeseries",
       "gridPos": { "h": 9, "w": 24, "x": 0, "y": 8 },
       "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
@@ -127,13 +158,14 @@
           "type": "json",
           "source": "url",
           "format": "timeseries",
-          "url": "http://dataingestion-api:8080/api/sensors/monitoring/readings?sensorType=Humidity&limit=500&propertyId=${propertyId}",
+          "url": "http://dataingestion-api:8080/api/sensors/monitoring/readings?sensorType=Humidity&limit=500&propertyId=${propertyId}&plotId=${plotId:csv}",
           "url_options": {
             "method": "GET"
           },
           "columns": [
-            { "selector": "Timestamp", "text": "Time", "type": "timestamp" },
-            { "selector": "Value", "text": "Umidade", "type": "number" }
+            { "selector": "timestamp", "text": "Time", "type": "timestamp" },
+            { "selector": "value", "text": "Umidade", "type": "number" },
+            { "selector": "plotNome", "text": "Talhao", "type": "string" }
           ]
         }
       ],
@@ -141,7 +173,7 @@
         "defaults": {
           "custom": { "drawStyle": "line", "fillOpacity": 10, "pointSize": 3, "showPoints": "auto" },
           "unit": "percent",
-          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "color": { "mode": "palette-classic" },
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -157,7 +189,7 @@
     },
     {
       "title": "Historico - Temperatura (C)",
-      "description": "Dados historicos de temperatura dos sensores por talhao",
+      "description": "Dados historicos de temperatura dos sensores. Cada talhao aparece como uma linha separada.",
       "type": "timeseries",
       "gridPos": { "h": 9, "w": 24, "x": 0, "y": 17 },
       "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
@@ -167,13 +199,14 @@
           "type": "json",
           "source": "url",
           "format": "timeseries",
-          "url": "http://dataingestion-api:8080/api/sensors/monitoring/readings?sensorType=Temperature&limit=500&propertyId=${propertyId}",
+          "url": "http://dataingestion-api:8080/api/sensors/monitoring/readings?sensorType=Temperature&limit=500&propertyId=${propertyId}&plotId=${plotId:csv}",
           "url_options": {
             "method": "GET"
           },
           "columns": [
-            { "selector": "Timestamp", "text": "Time", "type": "timestamp" },
-            { "selector": "Value", "text": "Temperatura", "type": "number" }
+            { "selector": "timestamp", "text": "Time", "type": "timestamp" },
+            { "selector": "value", "text": "Temperatura", "type": "number" },
+            { "selector": "plotNome", "text": "Talhao", "type": "string" }
           ]
         }
       ],
@@ -181,7 +214,7 @@
         "defaults": {
           "custom": { "drawStyle": "line", "fillOpacity": 10, "pointSize": 3, "showPoints": "auto" },
           "unit": "celsius",
-          "color": { "mode": "fixed", "fixedColor": "orange" },
+          "color": { "mode": "palette-classic" },
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -197,7 +230,7 @@
     },
     {
       "title": "Historico - Precipitacao (mm)",
-      "description": "Dados historicos de precipitacao dos sensores por talhao",
+      "description": "Dados historicos de precipitacao dos sensores. Cada talhao aparece como uma linha separada.",
       "type": "timeseries",
       "gridPos": { "h": 9, "w": 24, "x": 0, "y": 26 },
       "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
@@ -207,13 +240,14 @@
           "type": "json",
           "source": "url",
           "format": "timeseries",
-          "url": "http://dataingestion-api:8080/api/sensors/monitoring/readings?sensorType=Rainfall&limit=500&propertyId=${propertyId}",
+          "url": "http://dataingestion-api:8080/api/sensors/monitoring/readings?sensorType=Rainfall&limit=500&propertyId=${propertyId}&plotId=${plotId:csv}",
           "url_options": {
             "method": "GET"
           },
           "columns": [
-            { "selector": "Timestamp", "text": "Time", "type": "timestamp" },
-            { "selector": "Value", "text": "Precipitacao", "type": "number" }
+            { "selector": "timestamp", "text": "Time", "type": "timestamp" },
+            { "selector": "value", "text": "Precipitacao", "type": "number" },
+            { "selector": "plotNome", "text": "Talhao", "type": "string" }
           ]
         }
       ],
@@ -221,7 +255,7 @@
         "defaults": {
           "custom": { "drawStyle": "line", "fillOpacity": 20, "pointSize": 3, "showPoints": "auto" },
           "unit": "lengthmm",
-          "color": { "mode": "fixed", "fixedColor": "semi-dark-blue" },
+          "color": { "mode": "palette-classic" },
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -232,6 +266,88 @@
           }
         },
         "overrides": []
+      }
+    },
+    {
+      "title": "Historico de Alertas",
+      "description": "Ultimos alertas disparados para a propriedade e seus talhoes",
+      "type": "table",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 35 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "format": "table",
+          "url": "http://property-api:8080/api/properties/monitoring/alerts-history?limit=100&propertyId=${propertyId}&plotId=${plotId:csv}",
+          "url_options": {
+            "method": "GET"
+          },
+          "columns": [
+            { "selector": "createdAt", "text": "Data/Hora", "type": "timestamp" },
+            { "selector": "propertyNome", "text": "Propriedade", "type": "string" },
+            { "selector": "plotNome", "text": "Talhao", "type": "string" },
+            { "selector": "alertType", "text": "Tipo Alerta", "type": "string" },
+            { "selector": "message", "text": "Mensagem", "type": "string" },
+            { "selector": "sensorType", "text": "Sensor", "type": "string" },
+            { "selector": "sensorValue", "text": "Valor Medido", "type": "number" },
+            { "selector": "threshold", "text": "Threshold", "type": "number" },
+            { "selector": "isActive", "text": "Ativo", "type": "string" }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Tipo Alerta" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background" }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  { "type": "regex", "options": { "pattern": ".*Critico.*|.*Critica.*|.*Critical.*", "result": { "color": "red" } } },
+                  { "type": "regex", "options": { "pattern": ".*Alta.*|.*High.*|.*Intensa.*", "result": { "color": "orange" } } },
+                  { "type": "regex", "options": { "pattern": ".*Seca.*|.*Dry.*", "result": { "color": "yellow" } } }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Sensor" },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  { "type": "value", "options": { "Humidity": { "text": "Umidade" }, "Temperature": { "text": "Temperatura" }, "Rainfall": { "text": "Precipitacao" } } }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Ativo" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-text" }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  { "type": "value", "options": { "true": { "color": "red", "text": "Ativo" }, "false": { "color": "green", "text": "Resolvido" } } }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Data/Hora", "desc": true }]
       }
     }
   ],
