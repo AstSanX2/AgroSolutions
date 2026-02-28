@@ -219,9 +219,10 @@ function Redeploy-All {
 function Start-PortForward {
     Write-Host "`nEscolha o que expor:" -ForegroundColor White
     Write-Host "  [1] Gateway (porta 5000) - acesso as APIs" -ForegroundColor Yellow
-    Write-Host "  [2] RabbitMQ Management (porta 15672)" -ForegroundColor Yellow
-    Write-Host "  [3] MongoDB (porta 27017)" -ForegroundColor Yellow
-    Write-Host "  [4] Gateway + RabbitMQ + MongoDB (todos)" -ForegroundColor Yellow
+    Write-Host "  [2] Grafana (porta 3000) - dashboards" -ForegroundColor Yellow
+    Write-Host "  [3] RabbitMQ Management (porta 15672)" -ForegroundColor Yellow
+    Write-Host "  [4] MongoDB (porta 27017)" -ForegroundColor Yellow
+    Write-Host "  [5] Gateway + Grafana + RabbitMQ + mongodb (todos)" -ForegroundColor Yellow
     Write-Host ""
 
     $choice = Read-Host "Escolha"
@@ -229,12 +230,14 @@ function Start-PortForward {
     $commands = @()
     switch ($choice) {
         "1" { $commands = @("kubectl port-forward -n $namespace svc/gateway 5000:80") }
-        "2" { $commands = @("kubectl port-forward -n $namespace svc/rabbitmq 15672:15672") }
-        "3" { $commands = @("kubectl port-forward -n $namespace svc/mongodb 27017:27017") }
-        "4" { $commands = @(
+        "2" { $commands = @("kubectl port-forward -n $namespace svc/grafana 3000:3000") }
+        "3" { $commands = @("kubectl port-forward -n $namespace svc/rabbitmq 15672:15672") }
+        "4" { $commands = @("kubectl port-forward -n $namespace svc/mongodb 27017:27017") }
+        "5" { $commands = @(
                 "kubectl port-forward -n $namespace svc/gateway 5000:80",
-                "kubectl port-forward -n $namespace svc/rabbitmq 15672:15672",
-                "kubectl port-forward -n $namespace svc/mongodb 27017:27017"
+                "kubectl port-forward -n $namespace svc/grafana 3000:3000",
+                "kubectl port-forward -n $namespace svc/rabbitmq 15672:15672"
+				"kubectl port-forward -n agrosolutions svc/mongodb 27017:27017"
             )
         }
         default {
@@ -256,8 +259,8 @@ function Start-PortForward {
         }
         Write-Host "`nURLs disponiveis:" -ForegroundColor White
         Write-Host "  Gateway:   http://localhost:5000" -ForegroundColor Gray
+        Write-Host "  Grafana:   http://localhost:3000 (admin/admin)" -ForegroundColor Gray
         Write-Host "  RabbitMQ:  http://localhost:15672 (guest/guest)" -ForegroundColor Gray
-        Write-Host "  MongoDB:   localhost:27017" -ForegroundColor Gray
         Write-Host ""
     }
 }

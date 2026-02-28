@@ -1,0 +1,333 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: agrosolutions
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+        editable: false
+      - name: Infinity
+        type: yesoreyeram-infinity-datasource
+        uid: infinity
+        access: proxy
+        isDefault: false
+        editable: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-provisioning
+  namespace: agrosolutions
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'AgroSolutions'
+        orgId: 1
+        folder: 'AgroSolutions'
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards
+          foldersFromFilesStructure: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: agrosolutions
+data:
+  infrastructure.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "title": "Servicos Ativos",
+          "description": "Quantidade de servicos enviando metricas",
+          "type": "stat",
+          "gridPos": { "h": 5, "w": 8, "x": 0, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [{ "expr": "count(count by (service_name) (agrosolutions_http_server_request_duration_seconds_count))", "legendFormat": "Servicos" }],
+          "fieldConfig": { "defaults": { "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 1 }, { "color": "green", "value": 3 }] } }, "overrides": [] }
+        },
+        {
+          "title": "Total de Requests",
+          "description": "Total acumulado de requisicoes HTTP em todos os servicos",
+          "type": "stat",
+          "gridPos": { "h": 5, "w": 8, "x": 8, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [{ "expr": "sum(agrosolutions_http_server_request_duration_seconds_count) or vector(0)", "legendFormat": "Requests" }],
+          "fieldConfig": { "defaults": { "thresholds": { "steps": [{ "color": "blue", "value": null }, { "color": "green", "value": 100 }] } }, "overrides": [] }
+        },
+        {
+          "title": "Requests por Status Code",
+          "description": "Distribuicao de respostas HTTP por status code",
+          "type": "piechart",
+          "gridPos": { "h": 5, "w": 8, "x": 16, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [{ "expr": "sum by (http_response_status_code) (agrosolutions_http_server_request_duration_seconds_count)", "legendFormat": "HTTP {{http_response_status_code}}" }],
+          "fieldConfig": { "defaults": {}, "overrides": [] }
+        },
+        {
+          "title": "Taxa de Requisicoes HTTP por Servico (req/s)",
+          "description": "Request rate por servico nos ultimos 5 minutos",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [{ "expr": "sum by (service_name) (rate(agrosolutions_http_server_request_duration_seconds_count[5m]))", "legendFormat": "{{service_name}}" }],
+          "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 15, "pointSize": 3, "showPoints": "auto" }, "unit": "reqps", "color": { "mode": "palette-classic" } }, "overrides": [] }
+        },
+        {
+          "title": "Latencia P95 por Servico (ms)",
+          "description": "Percentil 95 de latencia HTTP por servico",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 5 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [{ "expr": "histogram_quantile(0.95, sum by (le, service_name) (rate(agrosolutions_http_server_request_duration_seconds_bucket[5m]))) * 1000", "legendFormat": "P95 {{service_name}}" }],
+          "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 10, "pointSize": 3, "showPoints": "auto" }, "unit": "ms", "color": { "mode": "palette-classic" } }, "overrides": [] }
+        },
+        {
+          "title": "Latencia Media por Servico (ms)",
+          "description": "Latencia media (sum/count) por servico",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [{ "expr": "(rate(agrosolutions_http_server_request_duration_seconds_sum[5m]) / rate(agrosolutions_http_server_request_duration_seconds_count[5m])) * 1000", "legendFormat": "{{service_name}}" }],
+          "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 10, "pointSize": 3, "showPoints": "auto" }, "unit": "ms", "color": { "mode": "palette-classic" } }, "overrides": [] }
+        },
+        {
+          "title": "Taxa de Erros HTTP (5xx) por Servico",
+          "description": "Erros do servidor por servico",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [{ "expr": "sum by (service_name) (rate(agrosolutions_http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"}[5m]))", "legendFormat": "5xx {{service_name}}" }],
+          "fieldConfig": { "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 50, "pointSize": 3 }, "color": { "mode": "palette-classic" }, "unit": "reqps" }, "overrides": [] }
+        },
+        {
+          "title": "Requisicoes por Metodo HTTP",
+          "description": "Distribuicao de requests por metodo (GET, POST, PUT, DELETE)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 21 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [{ "expr": "sum by (http_request_method) (rate(agrosolutions_http_server_request_duration_seconds_count[5m]))", "legendFormat": "{{http_request_method}}" }],
+          "fieldConfig": { "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 30, "pointSize": 3 }, "unit": "reqps", "color": { "mode": "palette-classic" } }, "overrides": [] }
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["agrosolutions", "infrastructure", "performance"],
+      "templating": { "list": [] },
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "AgroSolutions - Infraestrutura",
+      "uid": "agro-infra"
+    }
+  monitoring.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "templating": {
+        "list": [
+          {
+            "name": "propertyId",
+            "label": "Propriedade",
+            "type": "query",
+            "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+            "query": {
+              "queryType": "infinity",
+              "infinityQuery": {
+                "refId": "variable",
+                "type": "json",
+                "source": "url",
+                "url": "http://property-api:8080/api/properties/monitoring/properties",
+                "url_options": { "method": "GET" },
+                "root_selector": "",
+                "columns": [
+                  { "selector": "nome", "text": "nome", "type": "string" },
+                  { "selector": "id", "text": "id", "type": "string" }
+                ]
+              }
+            },
+            "refresh": 1,
+            "sort": 1,
+            "includeAll": false,
+            "multi": false,
+            "regex": "",
+            "current": {}
+          },
+          {
+            "name": "plotId",
+            "label": "Talhao",
+            "type": "query",
+            "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+            "query": {
+              "queryType": "infinity",
+              "infinityQuery": {
+                "refId": "variable",
+                "type": "json",
+                "source": "url",
+                "url": "http://property-api:8080/api/properties/monitoring/properties/${propertyId}/plots",
+                "url_options": { "method": "GET" },
+                "root_selector": "",
+                "columns": [
+                  { "selector": "nome", "text": "nome", "type": "string" },
+                  { "selector": "id", "text": "id", "type": "string" }
+                ]
+              }
+            },
+            "refresh": 1,
+            "sort": 1,
+            "includeAll": true,
+            "allValue": "",
+            "multi": true,
+            "regex": "",
+            "current": {}
+          }
+        ]
+      },
+      "panels": [
+        {
+          "title": "Status dos Talhoes",
+          "description": "Status geral de cada talhao: Normal, Alerta de Seca, Temperatura Critica, etc.",
+          "type": "table",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 },
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+          "targets": [{ "refId": "A", "type": "json", "source": "url", "format": "table", "url": "http://property-api:8080/api/properties/monitoring/plots-status?propertyId=${propertyId}&plotId=${plotId:csv}", "url_options": { "method": "GET" }, "columns": [{ "selector": "propertyNome", "text": "Propriedade", "type": "string" }, { "selector": "plotNome", "text": "Talhao", "type": "string" }, { "selector": "culturaNome", "text": "Cultura", "type": "string" }, { "selector": "area", "text": "Area (ha)", "type": "number" }, { "selector": "status", "text": "Status", "type": "string" }, { "selector": "umidade", "text": "Umidade (%)", "type": "number" }, { "selector": "temperatura", "text": "Temperatura (C)", "type": "number" }, { "selector": "precipitacao", "text": "Precipitacao (mm)", "type": "number" }, { "selector": "ultimaAtualizacao", "text": "Ultima Atualizacao", "type": "timestamp" }] }],
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Status" }, "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background" } }, { "id": "mappings", "value": [{ "type": "value", "options": { "Normal": { "color": "green", "text": "Normal" } } }, { "type": "regex", "options": { "pattern": ".*Seca.*", "result": { "color": "orange" } } }, { "type": "regex", "options": { "pattern": ".*Temperatura.*", "result": { "color": "red" } } }, { "type": "regex", "options": { "pattern": ".*Chuva.*", "result": { "color": "blue" } } }] }] },
+              { "matcher": { "id": "byName", "options": "Umidade (%)" }, "properties": [{ "id": "thresholds", "value": { "steps": [{ "color": "red", "value": null }, { "color": "orange", "value": 20 }, { "color": "yellow", "value": 30 }, { "color": "green", "value": 40 }] } }, { "id": "custom.cellOptions", "value": { "type": "color-text" } }] },
+              { "matcher": { "id": "byName", "options": "Temperatura (C)" }, "properties": [{ "id": "thresholds", "value": { "steps": [{ "color": "blue", "value": null }, { "color": "green", "value": 10 }, { "color": "orange", "value": 35 }, { "color": "red", "value": 40 }] } }, { "id": "custom.cellOptions", "value": { "type": "color-text" } }] }
+            ]
+          }
+        },
+        {
+          "title": "Historico - Umidade do Solo (%)",
+          "description": "Dados historicos de umidade dos sensores.",
+          "type": "timeseries",
+          "gridPos": { "h": 9, "w": 24, "x": 0, "y": 8 },
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+          "targets": [{ "refId": "A", "type": "json", "source": "url", "format": "timeseries", "url": "http://dataingestion-api:8080/api/sensors/monitoring/readings?sensorType=Humidity&limit=500&propertyId=${propertyId}&plotId=${plotId:csv}", "url_options": { "method": "GET" }, "columns": [{ "selector": "timestamp", "text": "Time", "type": "timestamp" }, { "selector": "value", "text": "Umidade", "type": "number" }, { "selector": "plotNome", "text": "Talhao", "type": "string" }] }],
+          "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 10, "pointSize": 3, "showPoints": "auto" }, "unit": "percent", "color": { "mode": "palette-classic" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "orange", "value": 20 }, { "color": "yellow", "value": 30 }, { "color": "green", "value": 40 }] } }, "overrides": [] }
+        },
+        {
+          "title": "Historico - Temperatura (C)",
+          "description": "Dados historicos de temperatura dos sensores.",
+          "type": "timeseries",
+          "gridPos": { "h": 9, "w": 24, "x": 0, "y": 17 },
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+          "targets": [{ "refId": "A", "type": "json", "source": "url", "format": "timeseries", "url": "http://dataingestion-api:8080/api/sensors/monitoring/readings?sensorType=Temperature&limit=500&propertyId=${propertyId}&plotId=${plotId:csv}", "url_options": { "method": "GET" }, "columns": [{ "selector": "timestamp", "text": "Time", "type": "timestamp" }, { "selector": "value", "text": "Temperatura", "type": "number" }, { "selector": "plotNome", "text": "Talhao", "type": "string" }] }],
+          "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 10, "pointSize": 3, "showPoints": "auto" }, "unit": "celsius", "color": { "mode": "palette-classic" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }, { "color": "green", "value": 10 }, { "color": "orange", "value": 35 }, { "color": "red", "value": 40 }] } }, "overrides": [] }
+        },
+        {
+          "title": "Historico - Precipitacao (mm)",
+          "description": "Dados historicos de precipitacao dos sensores.",
+          "type": "timeseries",
+          "gridPos": { "h": 9, "w": 24, "x": 0, "y": 26 },
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+          "targets": [{ "refId": "A", "type": "json", "source": "url", "format": "timeseries", "url": "http://dataingestion-api:8080/api/sensors/monitoring/readings?sensorType=Rainfall&limit=500&propertyId=${propertyId}&plotId=${plotId:csv}", "url_options": { "method": "GET" }, "columns": [{ "selector": "timestamp", "text": "Time", "type": "timestamp" }, { "selector": "value", "text": "Precipitacao", "type": "number" }, { "selector": "plotNome", "text": "Talhao", "type": "string" }] }],
+          "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 20, "pointSize": 3, "showPoints": "auto" }, "unit": "lengthmm", "color": { "mode": "palette-classic" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 50 }, { "color": "red", "value": 100 }] } }, "overrides": [] }
+        },
+        {
+          "title": "Historico de Alertas",
+          "description": "Ultimos alertas disparados para a propriedade e seus talhoes",
+          "type": "table",
+          "gridPos": { "h": 10, "w": 24, "x": 0, "y": 35 },
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+          "targets": [{ "refId": "A", "type": "json", "source": "url", "format": "table", "url": "http://property-api:8080/api/properties/monitoring/alerts-history?limit=100&propertyId=${propertyId}&plotId=${plotId:csv}", "url_options": { "method": "GET" }, "columns": [{ "selector": "createdAt", "text": "Data/Hora", "type": "timestamp" }, { "selector": "propertyNome", "text": "Propriedade", "type": "string" }, { "selector": "plotNome", "text": "Talhao", "type": "string" }, { "selector": "alertType", "text": "Tipo Alerta", "type": "string" }, { "selector": "message", "text": "Mensagem", "type": "string" }, { "selector": "sensorType", "text": "Sensor", "type": "string" }, { "selector": "sensorValue", "text": "Valor Medido", "type": "number" }, { "selector": "threshold", "text": "Threshold", "type": "number" }, { "selector": "isActive", "text": "Ativo", "type": "string" }] }],
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Tipo Alerta" }, "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background" } }, { "id": "mappings", "value": [{ "type": "regex", "options": { "pattern": ".*Critico.*|.*Critica.*|.*Critical.*", "result": { "color": "red" } } }, { "type": "regex", "options": { "pattern": ".*Alta.*|.*High.*|.*Intensa.*", "result": { "color": "orange" } } }, { "type": "regex", "options": { "pattern": ".*Seca.*|.*Dry.*", "result": { "color": "yellow" } } }] }] },
+              { "matcher": { "id": "byName", "options": "Sensor" }, "properties": [{ "id": "mappings", "value": [{ "type": "value", "options": { "Humidity": { "text": "Umidade" }, "Temperature": { "text": "Temperatura" }, "Rainfall": { "text": "Precipitacao" } } }] }] },
+              { "matcher": { "id": "byName", "options": "Ativo" }, "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }, { "id": "mappings", "value": [{ "type": "value", "options": { "true": { "color": "red", "text": "Ativo" }, "false": { "color": "green", "text": "Resolvido" } } }] }] }
+            ]
+          },
+          "options": { "showHeader": true, "sortBy": [{ "displayName": "Data/Hora", "desc": true }] }
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["agrosolutions", "monitoring", "hackathon"],
+      "time": { "from": "now-6h", "to": "now" },
+      "title": "AgroSolutions - Monitoramento de Talhoes",
+      "uid": "agro-monitoring"
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: agrosolutions
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              value: "admin"
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: "admin"
+            - name: GF_USERS_ALLOW_SIGN_UP
+              value: "false"
+            - name: GF_INSTALL_PLUGINS
+              value: "yesoreyeram-infinity-datasource"
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: dashboard-provisioning
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: dashboards
+              mountPath: /var/lib/grafana/dashboards
+      volumes:
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+        - name: dashboard-provisioning
+          configMap:
+            name: grafana-dashboard-provisioning
+        - name: dashboards
+          configMap:
+            name: grafana-dashboards
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: agrosolutions
+spec:
+  selector:
+    app: grafana
+  ports:
+    - port: 3000
+      targetPort: 3000

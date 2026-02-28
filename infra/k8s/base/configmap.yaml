@@ -9,3 +9,4 @@ data:
   JwtSettings__Issuer: "AgroSolutions"
   JwtSettings__Audience: "AgroSolutions"
   JwtSettings__ExpirationInHours: "24"
+  Otel__Endpoint: "http://otel-collector:4317"

@@ -57,7 +57,8 @@ function Test-ImagesBuilt {
         "agrosolutions-property-api",
         "agrosolutions-dataingestion-api",
         "agrosolutions-alert-worker",
-        "agrosolutions-gateway"
+        "agrosolutions-gateway",
+        "agrosolutions-sensor-simulator"
     )
 
     foreach ($img in $requiredImages) {
@@ -177,7 +178,8 @@ if (Test-ImagesBuilt) {
         @{Name = "agrosolutions-property-api"; Dockerfile = "src/Services/Property/AgroSolutions.Property.API/Dockerfile"},
         @{Name = "agrosolutions-dataingestion-api"; Dockerfile = "src/Services/DataIngestion/AgroSolutions.DataIngestion.API/Dockerfile"},
         @{Name = "agrosolutions-alert-worker"; Dockerfile = "src/Services/Alert/AgroSolutions.Alert.Worker/Dockerfile"},
-        @{Name = "agrosolutions-gateway"; Dockerfile = "src/ApiGateway/AgroSolutions.Gateway/Dockerfile"}
+        @{Name = "agrosolutions-gateway"; Dockerfile = "src/ApiGateway/AgroSolutions.Gateway/Dockerfile"},
+        @{Name = "agrosolutions-sensor-simulator"; Dockerfile = "src/Simulator/AgroSolutions.SensorSimulator/Dockerfile"}
     )
 
     $buildFailed = $false
@@ -277,22 +279,31 @@ Write-Host @"
 
 Write-Host "URLS DE ACESSO (com port-forward ativo):" -ForegroundColor Cyan
 Write-Host "  Gateway:        http://localhost:5000/health" -ForegroundColor Gray
-Write-Host "  Identity API:   http://localhost:5000/api/identity/health" -ForegroundColor Gray
-Write-Host "  Property API:   http://localhost:5000/api/property/health" -ForegroundColor Gray
-Write-Host "  Sensors API:    http://localhost:5000/api/sensors/health" -ForegroundColor Gray
+Write-Host "  Auth API:       http://localhost:5000/api/auth/me" -ForegroundColor Gray
+Write-Host "  Property API:   http://localhost:5000/api/properties" -ForegroundColor Gray
+Write-Host "  Sensors API:    http://localhost:5000/api/sensors" -ForegroundColor Gray
+Write-Host "  Grafana:        http://localhost:3000 (admin/admin)" -ForegroundColor Gray
 Write-Host "  RabbitMQ:       http://localhost:15672 (guest/guest)" -ForegroundColor Gray
 Write-Host ""
 
-$portForward = Read-Host "Deseja iniciar o port-forward do Gateway agora? (s/n)"
+Write-Host "Para iniciar o port-forward:" -ForegroundColor White
+Write-Host "  Gateway (API):  kubectl port-forward -n agrosolutions svc/gateway 5000:80" -ForegroundColor Yellow
+Write-Host "  Grafana:        kubectl port-forward -n agrosolutions svc/grafana 3000:3000" -ForegroundColor Yellow
+Write-Host "  RabbitMQ:       kubectl port-forward -n agrosolutions svc/rabbitmq 15672:15672" -ForegroundColor Yellow
+Write-Host ""
+
+$portForward = Read-Host "Deseja iniciar o port-forward do Gateway e Grafana agora? (s/n)"
 if ($portForward -eq 's') {
-    Write-Host "`nIniciando port-forward na porta 5000..." -ForegroundColor Yellow
-    Write-Host "Acesse: http://localhost:5000/health" -ForegroundColor Cyan
-    Write-Host "Pressione Ctrl+C para encerrar o port-forward`n" -ForegroundColor Gray
+    Write-Host "`nIniciando port-forward..." -ForegroundColor Yellow
+    Write-Host "  Gateway: http://localhost:5000" -ForegroundColor Cyan
+    Write-Host "  Grafana: http://localhost:3000 (admin/admin)" -ForegroundColor Cyan
+    Write-Host "Pressione Ctrl+C para encerrar`n" -ForegroundColor Gray
+
+    # Iniciar Grafana port-forward em background
+    Start-Job -ScriptBlock { kubectl port-forward -n agrosolutions svc/grafana 3000:3000 } | Out-Null
+    # Gateway em foreground (bloqueia ate Ctrl+C)
     kubectl port-forward -n agrosolutions svc/gateway 5000:80
 } else {
-    Write-Host "Para iniciar o port-forward manualmente:" -ForegroundColor White
-    Write-Host "  kubectl port-forward -n agrosolutions svc/gateway 5000:80" -ForegroundColor Yellow
-    Write-Host ""
     Write-Host "Outras opcoes:" -ForegroundColor White
     Write-Host "  .\scripts\manage.ps1       - Gerenciar servicos" -ForegroundColor Yellow
     Write-Host "  .\scripts\test.ps1         - Verificar status" -ForegroundColor Yellow

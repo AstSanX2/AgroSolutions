@@ -9,6 +9,9 @@ resources:
   - secret.yaml
   - mongodb.yaml
   - rabbitmq.yaml
+  - otel-collector.yaml
+  - prometheus.yaml
+  - grafana.yaml
   - identity-api.yaml
   - property-api.yaml
   - dataingestion-api.yaml

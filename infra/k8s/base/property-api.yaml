@@ -21,7 +21,7 @@ spec:
             - containerPort: 8080
           env:
             - name: PathBase
-              value: "/api/property"
+              value: "/api/properties"
           envFrom:
             - configMapRef:
                 name: agrosolutions-config
@@ -49,5 +49,9 @@ spec:
   selector:
     app: property-api
   ports:
-    - port: 80
+    - name: http
+      port: 80
+      targetPort: 8080
+    - name: http-alt
+      port: 8080
       targetPort: 8080
